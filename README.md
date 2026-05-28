@@ -1,10 +1,10 @@
-# GitHub Profile Analyzer API 🚀
+# GitHub Profile Analyzer API
 
 An elegant and robust Node.js & Express REST API that analyzes GitHub user profiles using the GitHub Public API, calculates developer insights (scores, grades, popular repos, and top languages), and stores the insights in a MySQL database.
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 1. **GitHub Profile Fetching**: Fetches public profile details (bio, followers, company, etc.) in real-time.
 2. **Aggregated Repository Insights**:
@@ -23,7 +23,7 @@ An elegant and robust Node.js & Express REST API that analyzes GitHub user profi
 
 ---
 
-## 🚀 Advanced Enhancements (Added Beyond Basic Requirements)
+## Advanced Enhancements (Added Beyond Basic Requirements)
 
 - **Cloud Valkey/Redis Caching (src/features/github/service.js)**: Integrates `ioredis` with full SSL/TLS support to connect to Aiven Valkey, caching profile results for 1 hour with graceful offline fallbacks.
 - **Schema Validation Middleware (src/middleware/validation.middleware.js)**: Uses `zod` to validate GitHub username patterns and block invalid requests before hitting external APIs.
@@ -33,7 +33,7 @@ An elegant and robust Node.js & Express REST API that analyzes GitHub user profi
 
 ---
 
-## 📂 Folder Structure
+## Folder Structure
 
 ```text
 src/
@@ -62,7 +62,7 @@ src/
 
 ---
 
-## 🛠️ Setup & Installation
+## Setup & Installation
 
 ### Prerequisite
 Ensure you have **Node.js (v18+)** and **MySQL** (local or hosted, e.g. Aiven) installed.
@@ -103,7 +103,7 @@ GITHUB_TOKEN=your_github_personal_access_token
 
 ---
 
-## 📡 API Endpoints & Documentation
+## API Endpoints & Documentation
 
 ### 1. Root / Welcome Endpoint
 * **URL:** `GET /`
