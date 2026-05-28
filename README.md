@@ -23,6 +23,16 @@ An elegant and robust Node.js & Express REST API that analyzes GitHub user profi
 
 ---
 
+## 🚀 Advanced Enhancements (Added Beyond Basic Requirements)
+
+- **Cloud Valkey/Redis Caching (src/features/github/service.js)**: Integrates `ioredis` with full SSL/TLS support to connect to Aiven Valkey, caching profile results for 1 hour with graceful offline fallbacks.
+- **Schema Validation Middleware (src/middleware/validation.middleware.js)**: Uses `zod` to validate GitHub username patterns and block invalid requests before hitting external APIs.
+- **API Rate Limiting Middleware (src/app.js)**: Uses `express-rate-limit` to restrict requests to a maximum of 100 requests per 15 minutes per IP, protecting the API from denial-of-service and brute force abuse.
+- **Startup Environment Validation (src/utils/envValidation.js)**: Validates all required `.env` variables on startup, terminating early with debugging messages if any are missing.
+- **Database Performance Indexes (schema.sql / db.js)**: Optimizes MySQL query performance by adding B-Tree indexes on `profile_score`, `stars_received`, and `followers` fields.
+
+---
+
 ## 📂 Folder Structure
 
 ```text
@@ -36,15 +46,17 @@ src/
 │       ├── controller.js      # Express route handlers
 │       ├── model.js           # Database queries
 │       ├── routes.js          # API route definitions
-│       └── service.js         # External API services orchestration
+│       └── service.js         # External API services orchestration (includes Valkey caching)
 ├── middleware/
 │   ├── error.middleware.js    # Global error handler
-│   └── notFound.middleware.js # 404 handler
+│   ├── notFound.middleware.js # 404 handler
+│   └── validation.middleware.js # Zod username schema validator
 ├── utils/
 │   ├── apiError.js            # Custom ApiError utility class
 │   ├── asyncHandler.js        # Wrapper for async routes
+│   ├── envValidation.js       # Startup environment check
 │   └── profileScore.js        # Developer grading logic
-├── app.js                     # Express app setup (cors, json middleware)
+├── app.js                     # Express app setup (cors, json middleware, rate limiter)
 └── server.js                  # Server port listening entrypoint
 ```
 
@@ -72,7 +84,10 @@ DB_USER=avnadmin
 DB_PASSWORD=your_mysql_password
 DB_NAME=defaultdb
 
-# Optional but recommended to prevent GitHub API Rate Limits (60 req/hour limit without token)
+# Required for startup check (used to cache profiles for 1 hour)
+REDIS_URL=rediss://default:your_valkey_password@your-valkey-host:port
+
+# Required to prevent GitHub API Rate Limits (60 req/hour limit without token)
 GITHUB_TOKEN=your_github_personal_access_token
 ```
 
