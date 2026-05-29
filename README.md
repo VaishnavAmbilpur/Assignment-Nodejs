@@ -11,15 +11,63 @@ An elegant and robust Node.js & Express REST API that analyzes GitHub user profi
    - **Total Stars Received**: Sum of stars across all public repositories.
    - **Top Languages**: Determines the top 3 most used languages.
    - **Popular Repository**: Automatically identifies the user's most starred repository.
-3. **Developer Scoring & Grading Algorithm**: Calculates a score from `0` to `100` and assigns a grade (`A+`, `A`, `B`, `C`, `D`):
-   - **Stars (Max 40pts)**: 5 pts per star.
-   - **Followers (Max 20pts)**: 2 pts per follower.
-   - **Repositories (Max 15pts)**: 1 pt per repo.
-   - **Language Diversity (Max 15pts)**: 5 pts per unique language.
-   - **Account Age (Max 10pts)**: 2 pts per year active.
+3. **Developer Scoring & Grading System**: Automatically calculates a developer reputation score from 0 to 100 and assigns a grade based on five weighted metrics (detailed in the section below).
 4. **Auto Table Initialization**: Automatically connects to the database and builds the SQL schema if it doesn't exist.
 5. **Clean Architecture**: Follows a clean, modular structure (`features/github` folder containing `controller`, `service`, `model`, `routes`, `analysis`, and `constants`).
 6. **Robust Error Handling**: Utilizes custom `ApiError` class and global async exception handler middleware.
+
+---
+
+## Developer Scoring & Grading System
+
+The API evaluates the quality and activity of a GitHub profile by calculating a numeric score capped at **100 points**. 
+
+### 1. Score Calculation (Weighted Metrics)
+
+The total score is calculated using five distinct developer activity metrics:
+
+| Metric | Points Formula | Maximum Points | Description |
+|---|---|---|---|
+| **Stars Received** | `starsCount * 5` | **40 points** | Total stargazers across all owned repositories. |
+| **Followers** | `followers * 2` | **20 points** | Total number of followers on GitHub. |
+| **Public Repositories** | `publicRepos * 1` | **15 points** | Total number of public repositories. |
+| **Language Diversity** | `uniqueLanguagesCount * 5` | **15 points** | Number of unique programming languages used across public repositories. |
+| **Account Age** | `yearsActive * 2` | **10 points** | Years active on GitHub (based on the `created_at` field). |
+
+### 2. Grade and Description Mapping
+
+Based on the final calculated score (0 - 100), the developer is assigned a Grade and a corresponding Description:
+
+* **Grade A+ (Elite Developer):** Score of **80 or higher**
+* **Grade A (Professional Developer):** Score between **60 and 79**
+* **Grade B (Active Developer):** Score between **40 and 59**
+* **Grade C (Intermediate Developer):** Score between **20 and 39**
+* **Grade D (Beginner Developer):** Score **under 20**
+
+### 3. How it is Displayed in the API Response
+
+The API response provides both the aggregated summary fields and a granular points breakdown under `additional_insights.scoreBreakdown`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "username": "example_user",
+    "profile_score": 85,
+    "developer_grade": "A+",
+    "additional_insights": {
+      "scoreBreakdown": {
+        "starsScore": 40,
+        "followersScore": 10,
+        "reposScore": 15,
+        "languageScore": 10,
+        "ageScore": 10
+      },
+      "description": "Elite Developer"
+    }
+  }
+}
+```
 
 ---
 
@@ -30,6 +78,7 @@ An elegant and robust Node.js & Express REST API that analyzes GitHub user profi
 - **API Rate Limiting Middleware (src/app.js)**: Uses `express-rate-limit` to restrict requests to a maximum of 100 requests per 15 minutes per IP, protecting the API from denial-of-service and brute force abuse.
 - **Startup Environment Validation (src/utils/envValidation.js)**: Validates all required `.env` variables on startup, terminating early with debugging messages if any are missing.
 - **Database Performance Indexes (schema.sql / db.js)**: Optimizes MySQL query performance by adding B-Tree indexes on `profile_score`, `stars_received`, and `followers` fields.
+- **Render Keep-Alive Self-Ping (src/utils/keepAlive.js)**: Automatically pings the server instance every 14 minutes using `RENDER_EXTERNAL_URL` to prevent the Render Free Tier instance from spinning down.
 
 ---
 
@@ -209,3 +258,38 @@ GITHUB_TOKEN=your_github_personal_access_token
   "message": "Profile for user \"google\" was deleted successfully."
 }
 ```
+
+---
+
+## Testing with Postman
+
+To test the API endpoints locally or in production, we have provided a pre-configured Postman Collection file in the root of this project: `github_profile_analyzer.postman_collection.json`.
+
+### How to Import and Use the Postman Collection:
+
+1. **Open Postman:**
+   - Launch your Postman desktop application or open Postman on your web browser.
+
+2. **Import the Collection:**
+   - In the top-left corner of Postman, click the **Import** button.
+   - Drag and drop or browse to select the `github_profile_analyzer.postman_collection.json` file from the root of this project.
+   - Click **Import** to confirm.
+
+3. **Configure the Base URL Variable:**
+   - Once imported, click on the **GitHub Profile Analyzer API** collection in your left sidebar.
+   - Go to the **Variables** tab in the main panel.
+   - Locate the variable named `baseUrl`.
+   - Update the **Current Value** to match your target environment:
+     - For local testing: `http://localhost:5000`
+     - For production testing: `https://assignment-nodejs-9hmk.onrender.com`
+   - Click **Save** (Ctrl+S or Cmd+S) in the top-right corner.
+
+4. **Run the Requests:**
+   - Expand the collection folder to view the list of 6 requests:
+     - **Welcome / Root** (`GET /`)
+     - **Analyze Profile (URL Param)** (`POST /api/profiles/:username`)
+     - **Analyze Profile (JSON Body)** (`POST /api/profiles`)
+     - **Get All Profiles** (`GET /api/profiles`)
+     - **Get Single Profile** (`GET /api/profiles/:username`)
+     - **Delete Profile** (`DELETE /api/profiles/:username`)
+   - Click on any request, adjust path variables (like `:username`) or JSON request body payload, and click **Send**.

@@ -3,7 +3,7 @@ const validateEnv = () => {
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
-    console.error("❌ CRITICAL SETUP ERROR: Missing required environment variables:");
+    console.error("CRITICAL SETUP ERROR: Missing required environment variables:");
     missing.forEach((variable) => console.error(`   - ${variable}`));
     console.error("\nPlease check your .env file before starting the server.\n");
     process.exit(1);
